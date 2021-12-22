@@ -61,7 +61,7 @@ inline void fatal(const std::string_view &msg, const Args & ... args) {
 
 using log4hpp::makeContext;
 using log4hpp::makeDetachedContext;
-using log4hpp::makeBackend;
+
 
 
 }

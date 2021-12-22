@@ -44,11 +44,11 @@ public:
 
 
 template<typename Appender>
-class Backend: public IBackend {
+class BackendT: public IBackend {
 public:
 
 	template<typename ... Args>
-	Backend(const std::string_view &format, Level::Type level, Args && ... appender)
+	BackendT(const std::string_view &format, Level::Type level, Args && ... appender)
 		:format(format),level(level),appender(std::forward<Args>(appender)...) {}
 
 
@@ -76,13 +76,41 @@ protected:
 	std::atomic<std::size_t> msgcnt;
 };
 
-template<typename Fn>
-std::shared_ptr<IBackend> makeBackend(const std::string_view &format, Level::Type level, Fn &&appender) {
-	return std::make_shared<Backend<Fn> >(format, level, std::forward<Fn>(appender));
+
+template<typename Appender>
+class Backend {
+public:
+
+	template<typename ... Args>
+	Backend(const std::string_view &format, Level::Type level, Args && ... args);
+
+	void install();
+	Appender *operator->() {return ptr->operator->();}
+	const Appender *operator->() const {return ptr->operator->();}
+	std::shared_ptr<IBackend> setActive();
+	static std::shared_ptr<IBackend> setActive(std::shared_ptr<IBackend> bk);
+
+	void direct_send(const std::string_view &line) {ptr->direct_send(line);}
+	Level::Type getLevel() const {return ptr->getLevel();}
+	void initCounter(std::size_t cnt) {ptr->initCounter(cnt);}
+
+	std::shared_ptr<BackendT<Appender> > getImpl() const {return ptr;}
+
+protected:
+	std::shared_ptr<BackendT<Appender> > ptr;
+
+};
+
+
+
+
+
+template<typename Appender>
+template<typename ... Args>
+inline Backend<Appender>::Backend(const std::string_view &format, Level::Type level, Args &&... args)
+:ptr(std::make_shared<BackendT<Appender> >(format, level, std::forward<Args>(args)...)) {}
+
+
 }
-
-
-
-}
-
 #endif /* LOG4HPP_BACKEND_H_ */
+

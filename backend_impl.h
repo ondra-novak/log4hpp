@@ -31,7 +31,7 @@ static inline void outLevelName(int level, Buffer &out) {
 
 
 template<typename Appender>
-inline void Backend<Appender>::send(ThreadContext &thr,
+inline void BackendT<Appender>::send(ThreadContext &thr,
 							Level::Type level, const AbstractContext *context,
 							const std::string_view &message) {
 	Buffer &buffer = thr.fmt_buffer;
@@ -130,17 +130,31 @@ inline void Backend<Appender>::send(ThreadContext &thr,
 	appender(out);
 }
 
-inline std::shared_ptr<IBackend> setActive(std	::shared_ptr<IBackend> newBk) {
-	auto &gs = GlobalContext::current();
-	auto cur = gs.backend;
-	gs.backend = newBk;
-	return cur;
-}
-
 inline std::shared_ptr<IBackend> setActiveInThread(std::shared_ptr<IBackend> newBk) {
 	auto &ts = ThreadContext::current();
 	auto cur = ts.backend;
 	ts.backend = newBk;
+	return cur;
+
+}
+
+template<typename Appender>
+inline void Backend<Appender>::install() {
+	auto &gs = GlobalContext::current();
+	gs.backend = ptr;
+
+}
+
+template<typename Appender>
+inline std::shared_ptr<IBackend> Backend<Appender>::setActive() {
+	return setActive(ptr);
+}
+
+template<typename Appender>
+inline std::shared_ptr<IBackend> Backend<Appender>::setActive(std::shared_ptr<IBackend> bk) {
+	auto &ts = ThreadContext::current();
+	auto cur = ts.backend;
+	ts.backend = bk;
 	return cur;
 
 }
