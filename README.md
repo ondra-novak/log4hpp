@@ -124,7 +124,7 @@ Default behaviour - "dots" - non-printable and collision characters are dotted, 
 
 ### Boolean
 
-prints **true** or  **false**
+prints **true** or **false**
 
 ### Double/Float
 
